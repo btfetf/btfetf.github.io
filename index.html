@@ -179,18 +179,32 @@
 					}
 					move(bears[bear]);
 					handleEdge(bears[bear]);
+
+					//if bull runs into bear
 					if (Math.sqrt((bull.x - bears[bear].x) * (bull.x - bears[bear].x) + (bull.y - bears[bear].y) * (bull.y - bears[bear].y)) < 75) {
 						SCORE = 0;
 						bears[bear].x = Math.floor(Math.random() * context.canvas.width);
 						bears[bear].y = Math.floor(Math.random() * context.canvas.height);
 						bull.x = canvas.width / 2;
 						bull.y = canvas.height / 2;
+						bears = [
+							{
+								x: coinPos.x - 25,
+								y: coinPos.y - 25,
+								r: BULL_SIZE / 2,
+								moveUp: false,
+								moveDown: false,
+								moveLeft: true,
+								moveRight: false,
+							},
+						];
 					}
 					context.drawImage(bearimg, bears[bear].x, bears[bear].y, 100, 100);
 				}
 
 				handleEdge(bull);
 
+				// if bull runs into coin
 				if (Math.sqrt((bull.x - coinPos.x) * (bull.x - coinPos.x) + (bull.y - coinPos.y) * (bull.y - coinPos.y)) < 75) {
 					SCORE++;
 					TOTAL_SCORE++;
