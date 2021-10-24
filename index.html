@@ -19,6 +19,7 @@
 		<img id="coinPos8" width="0" height="0" src="./coinPos8.jpg" alt="coinPos8" />
 		<img id="coinPos9" width="0" height="0" src="./coinPos9.jpg" alt="coinPos9" />
 		<img id="bullpng" width="0" height="0" src="./bull.PNG" alt="bullpng" />
+		<img id="bullWithLazers" width="0" height="0" src="./bullWithLazers.PNG" alt="bullWithLazers" />
 		<img
 			id="bear"
 			width="0"
@@ -242,10 +243,10 @@
 				context.font = '20px san-serif';
 				context.fillText('HIGH SCORE: 420\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
 				var img = document.getElementById(choice);
-				var bullimg = document.getElementById('bullpng');
+				var bullimg = !bull.charge ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
 
 				context.drawImage(img, coinPos.x, coinPos.y);
-				context.drawImage(bullimg, bull.x, bull.y, 100, 100);
+				context.drawImage(bullimg, bull.x, bull.y, !bull.charge ? 100 : 120, !bull.charge ? 100 : 120);
 			}
 		</script>
 	</body>
