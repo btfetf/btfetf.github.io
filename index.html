@@ -33,6 +33,7 @@
 			const BULL_SIZE = 30; // in pixels
 			const TURN_SPEED = 360; // turn speed in degrees per second
 			let SCORE = 0;
+			let TOTAL_SCORE = 0;
 			let TIME = 0;
 			let choice = 'coinPos1';
 
@@ -53,15 +54,17 @@
 				moveRight: false,
 			};
 
-			var bear = {
-				x: coinPos.x - 25,
-				y: coinPos.y - 25,
-				r: BULL_SIZE / 2,
-				moveUp: false,
-				moveDown: false,
-				moveLeft: true,
-				moveRight: false,
-			};
+			var bears = [
+				{
+					x: coinPos.x - 25,
+					y: coinPos.y - 25,
+					r: BULL_SIZE / 2,
+					moveUp: false,
+					moveDown: false,
+					moveLeft: true,
+					moveRight: false,
+				},
+			];
 
 			// event handlers
 			document.addEventListener('keydown', keyDown);
@@ -113,23 +116,6 @@
 				context.fillStyle = 'white';
 				context.fillRect(0, 0, canvas.width, canvas.height);
 
-				if (TIME % 25 == 0) {
-					let i = Math.floor(Math.random() * 4);
-					if (i == 1) {
-						bear.moveDown = true;
-						bear.moveLeft = false;
-					} else if (i == 2) {
-						bear.moveRight = true;
-						bear.moveDown = false;
-					} else if (i == 3) {
-						bear.moveUp = true;
-						bear.moveRight = false;
-					} else if (i == 0) {
-						bear.moveLeft = true;
-						bear.moveUp = false;
-					}
-				}
-
 				function move(object) {
 					if (object.moveLeft) {
 						object.x = object.x - 5;
@@ -145,7 +131,6 @@
 					}
 				}
 
-				move(bear);
 				move(bull);
 
 				// handle edge of screen
@@ -162,20 +147,53 @@
 					}
 				}
 
-				handleEdge(bear);
+				var bearimg = document.getElementById('bear');
+
+				for (bear in bears) {
+					if (TIME % 25 == 0) {
+						let i = Math.floor(Math.random() * 4);
+						if (i == 1) {
+							bears[bear].moveDown = true;
+							bears[bear].moveLeft = false;
+						} else if (i == 2) {
+							bears[bear].moveRight = true;
+							bears[bear].moveDown = false;
+						} else if (i == 3) {
+							bears[bear].moveUp = true;
+							bears[bear].moveRight = false;
+						} else if (i == 0) {
+							bears[bear].moveLeft = true;
+							bears[bear].moveUp = false;
+						}
+					}
+					move(bears[bear]);
+					handleEdge(bears[bear]);
+					if (Math.sqrt((bull.x - bears[bear].x) * (bull.x - bears[bear].x) + (bull.y - bears[bear].y) * (bull.y - bears[bear].y)) < 75) {
+						SCORE = 0;
+						bears[bear].x = Math.floor(Math.random() * context.canvas.width);
+						bears[bear].y = Math.floor(Math.random() * context.canvas.height);
+						bull.x = canvas.width / 2;
+						bull.y = canvas.height / 2;
+					}
+					context.drawImage(bearimg, bears[bear].x, bears[bear].y, 100, 100);
+				}
+
 				handleEdge(bull);
 
 				if (Math.sqrt((bull.x - coinPos.x) * (bull.x - coinPos.x) + (bull.y - coinPos.y) * (bull.y - coinPos.y)) < 75) {
 					SCORE++;
+					TOTAL_SCORE++;
 					coinPos.x = Math.floor(Math.random() * context.canvas.width);
 					coinPos.y = Math.floor(Math.random() * context.canvas.height);
-				}
-				if (Math.sqrt((bull.x - bear.x) * (bull.x - bear.x) + (bull.y - bear.y) * (bull.y - bear.y)) < 75) {
-					SCORE = 0;
-					bear.x = Math.floor(Math.random() * context.canvas.width);
-					bear.y = Math.floor(Math.random() * context.canvas.height);
-					bull.x = canvas.width / 2;
-					bull.y = canvas.height / 2;
+					bears.push({
+						x: coinPos.x + 25,
+						y: coinPos.y + 25,
+						r: BULL_SIZE / 2,
+						moveUp: false,
+						moveDown: false,
+						moveLeft: true,
+						moveRight: false,
+					});
 				}
 
 				if (TIME % 4 == 0) {
@@ -194,12 +212,15 @@
 				context.font = '50px san-serif';
 
 				context.fillText(SCORE, context.canvas.width / 20, context.canvas.height / 5);
+				context.fillText(TOTAL_SCORE, context.canvas.width - 50, context.canvas.height / 5);
+				context.fillStyle = 'black';
+				context.font = '20px san-serif';
+				context.fillText('HIGH SCORE: 420\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
 				var img = document.getElementById(choice);
 				var bullimg = document.getElementById('bullpng');
-				var bearimg = document.getElementById('bear');
+
 				context.drawImage(img, coinPos.x, coinPos.y);
 				context.drawImage(bullimg, bull.x, bull.y, 100, 100);
-				context.drawImage(bearimg, bear.x, bear.y, 100, 100);
 			}
 		</script>
 	</body>
