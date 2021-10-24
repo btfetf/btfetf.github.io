@@ -4,26 +4,33 @@
 		<meta charset="UTF-8" />
 		<link rel="icon" href="https://www.pngkit.com/png/detail/7-78507_bitcoin-png-bitcoin-logo-transparent-background.png" />
 		<title>BTF | ETF</title>
-		<style></style>
+		<link rel="stylesheet" href="styles.css" />
 	</head>
 
 	<body>
 		<canvas id="gameCanvas" width="screen.width" height="screen.height"></canvas>
-		<img id="coinPos1" width="10" height="10" src="./coinPos1.jpg" alt="coinPos1" />
-		<img id="coinPos2" width="10" height="10" src="./coinPos2.jpg" alt="coinPos2" />
-		<img id="coinPos3" width="10" height="10" src="./coinPos3.jpg" alt="coinPos3" />
-		<img id="coinPos4" width="10" height="10" src="./coinPos4.jpg" alt="coinPos4" />
-		<img id="coinPos5" width="10" height="10" src="./coinPos5.jpg" alt="coinPos5" />
-		<img id="coinPos6" width="10" height="10" src="./coinPos6.jpg" alt="coinPos6" />
-		<img id="coinPos7" width="10" height="10" src="./coinPos7.jpg" alt="coinPos7" />
-		<img id="coinPos8" width="10" height="10" src="./coinPos8.jpg" alt="coinPos8" />
-		<img id="coinPos9" width="10" height="10" src="./coinPos9.jpg" alt="coinPos9" />
+		<img id="coinPos1" width="0" height="0" src="./coinPos1.jpg" alt="coinPos1" />
+		<img id="coinPos2" width="0" height="0" src="./coinPos2.jpg" alt="coinPos2" />
+		<img id="coinPos3" width="0" height="0" src="./coinPos3.jpg" alt="coinPos3" />
+		<img id="coinPos4" width="0" height="0" src="./coinPos4.jpg" alt="coinPos4" />
+		<img id="coinPos5" width="0" height="0" src="./coinPos5.jpg" alt="coinPos5" />
+		<img id="coinPos6" width="0" height="0" src="./coinPos6.jpg" alt="coinPos6" />
+		<img id="coinPos7" width="0" height="0" src="./coinPos7.jpg" alt="coinPos7" />
+		<img id="coinPos8" width="0" height="0" src="./coinPos8.jpg" alt="coinPos8" />
+		<img id="coinPos9" width="0" height="0" src="./coinPos9.jpg" alt="coinPos9" />
+		<img id="bullpng" width="0" height="0" src="./bull.PNG" alt="bullpng" />
+		<img
+			id="bear"
+			width="0"
+			height="0"
+			src="https://www.clipartmax.com/png/middle/453-4536743_bear-clipart-mad-bear-bear-smile-emoji.png"
+			alt="bear"
+		/>
 
 		<script>
 			const FPS = 30; // frames per second
 			const FRICTION = 0.7; // friction coefficient of space (0 = none, 1 = lots)
-			const SHIP_SIZE = 30; // in pixels
-			const SHIP_THRUST = 5; // acceleration in pixels per second^2
+			const BULL_SIZE = 30; // in pixels
 			const TURN_SPEED = 360; // turn speed in degrees per second
 			let SCORE = 0;
 			let TIME = 0;
@@ -32,19 +39,28 @@
 			// get canvas properties
 			var canvas = document.getElementById('gameCanvas');
 			var context = canvas.getContext('2d');
+			context.canvas.width = window.innerWidth - 50;
+			context.canvas.height = window.innerHeight - 50;
+			coinPos = { x: canvas.width / 2, y: canvas.height / 2 };
 
-			// set up the spaceship object
-			var ship = {
+			var bull = {
 				x: canvas.width / 2,
 				y: canvas.height / 2,
-				r: SHIP_SIZE / 2,
-				a: (90 / 180) * Math.PI, // convert to radians
-				rotation: 0,
-				thrusting: false,
-				thrust: {
-					x: 0,
-					y: 0,
-				},
+				r: BULL_SIZE / 2,
+				moveUp: false,
+				moveDown: false,
+				moveLeft: false,
+				moveRight: false,
+			};
+
+			var bear = {
+				x: coinPos.x - 25,
+				y: coinPos.y - 25,
+				r: BULL_SIZE / 2,
+				moveUp: false,
+				moveDown: false,
+				moveLeft: true,
+				moveRight: false,
 			};
 
 			// event handlers
@@ -56,28 +72,36 @@
 
 			function keyDown(/** @type {KeyboardEvent} */ ev) {
 				switch (ev.keyCode) {
-					case 37: // left arrow (rotate ship left)
-						ship.rotation = ((TURN_SPEED / 180) * Math.PI) / FPS;
+					case 37: // left arrow (move bull left)
+						bull.moveLeft = true;
 						break;
-					case 38: // up arrow (thrust the ship forward)
-						ship.thrusting = true;
+					case 38: // up arrow (move bull down)
+						bull.moveDown = true;
 						break;
-					case 39: // right arrow (rotate ship right)
-						ship.rotation = ((-TURN_SPEED / 180) * Math.PI) / FPS;
+					case 39: // right arrow (move bull right)
+						bull.moveRight = true;
+						break;
+					case 40: // up arrow (move bull up)
+						bull.moveUp = true;
 						break;
 				}
 			}
 
 			function keyUp(/** @type {KeyboardEvent} */ ev) {
 				switch (ev.keyCode) {
-					case 37: // left arrow (stop rotating left)
-						ship.rotation = 0;
+					case 37: // left arrow (stop bull left)
+						bull.moveLeft = false;
 						break;
-					case 38: // up arrow (stop thrusting)
-						ship.thrusting = false;
+					case 38: // up arrow (stop bull up)
+						// ship.thrusting = false;
+						bull.moveDown = false;
 						break;
-					case 39: // right arrow (stop rotating right)
-						ship.rotation = 0;
+					case 39: // right arrow (stop bull right)
+						// ship.rotation = 0;
+						bull.moveRight = false;
+						break;
+					case 40: // down arrow (stop bull down)
+						bull.moveUp = false;
 						break;
 				}
 			}
@@ -89,87 +113,72 @@
 				context.fillStyle = 'white';
 				context.fillRect(0, 0, canvas.width, canvas.height);
 
-				// thrust the ship
-				if (ship.thrusting) {
-					ship.thrust.x += (SHIP_THRUST * Math.cos(ship.a)) / FPS;
-					ship.thrust.y -= (SHIP_THRUST * Math.sin(ship.a)) / FPS;
-
-					// draw the thruster
-					context.fillStyle = 'gold';
-					context.strokeStyle = 'red';
-					context.lineWidth = SHIP_SIZE / 10;
-					context.beginPath();
-					context.moveTo(
-						// rear left
-						ship.x - ship.r * ((2 / 3) * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
-						ship.y + ship.r * ((2 / 3) * Math.sin(ship.a) - 0.5 * Math.cos(ship.a))
-					);
-					context.lineTo(
-						// rear centre (behind the ship)
-						ship.x - ((ship.r * 5) / 3) * Math.cos(ship.a),
-						ship.y + ((ship.r * 5) / 3) * Math.sin(ship.a)
-					);
-					context.lineTo(
-						// rear right
-						ship.x - ship.r * ((2 / 3) * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
-						ship.y + ship.r * ((2 / 3) * Math.sin(ship.a) + 0.5 * Math.cos(ship.a))
-					);
-					context.closePath();
-					context.fill();
-					context.stroke();
-				} else {
-					// apply friction (slow the ship down when not thrusting)
-					ship.thrust.x -= (FRICTION * ship.thrust.x) / FPS;
-					ship.thrust.y -= (FRICTION * ship.thrust.y) / FPS;
+				if (TIME % 25 == 0) {
+					let i = Math.floor(Math.random() * 4);
+					if (i == 1) {
+						bear.moveDown = true;
+						bear.moveLeft = false;
+					} else if (i == 2) {
+						bear.moveRight = true;
+						bear.moveDown = false;
+					} else if (i == 3) {
+						bear.moveUp = true;
+						bear.moveRight = false;
+					} else if (i == 0) {
+						bear.moveLeft = true;
+						bear.moveUp = false;
+					}
 				}
 
-				// draw ship
-				context.strokeStyle = 'black';
-				context.lineWidth = SHIP_SIZE / 20;
-				context.beginPath();
-				context.moveTo(
-					// nose of ship
-					ship.x + (4 / 3) * ship.r * Math.cos(ship.a),
-					ship.y - (4 / 3) * ship.r * Math.sin(ship.a)
-				);
-				context.lineTo(
-					// rear left
-					ship.x - ship.r * ((2 / 3) * Math.cos(ship.a) + Math.sin(ship.a)),
-					ship.y + ship.r * ((2 / 3) * Math.sin(ship.a) - Math.cos(ship.a))
-				);
-				context.lineTo(
-					// rear right
-					ship.x - ship.r * ((2 / 3) * Math.cos(ship.a) - Math.sin(ship.a)),
-					ship.y + ship.r * ((2 / 3) * Math.sin(ship.a) + Math.cos(ship.a))
-				);
-				context.closePath();
-				context.stroke();
+				function move(object) {
+					if (object.moveLeft) {
+						object.x = object.x - 5;
+					}
+					if (object.moveRight) {
+						object.x = object.x + 5;
+					}
+					if (object.moveUp) {
+						object.y = object.y + 5;
+					}
+					if (object.moveDown) {
+						object.y = object.y - 5;
+					}
+				}
 
-				// rotate ship
-				ship.a += ship.rotation;
-
-				// move ship
-				ship.x += ship.thrust.x;
-				ship.y += ship.thrust.y;
+				move(bear);
+				move(bull);
 
 				// handle edge of screen
-				if (ship.x < 0 - ship.r) {
-					ship.x = canvas.width + ship.r;
-				} else if (ship.x > canvas.width + ship.r) {
-					ship.x = 0 - ship.r;
-				}
-				if (ship.y < 0 - ship.r) {
-					ship.y = canvas.height + ship.r;
-				} else if (ship.y > canvas.height + ship.r) {
-					ship.y = 0 - ship.r;
+				function handleEdge(object) {
+					if (object.x < 0 - object.r) {
+						object.x = canvas.width + object.r;
+					} else if (object.x > canvas.width + object.r) {
+						object.x = 0 - object.r;
+					}
+					if (object.y < 0 - object.r) {
+						object.y = canvas.height + object.r;
+					} else if (object.y > canvas.height + object.r) {
+						object.y = 0 - object.r;
+					}
 				}
 
-				if (Math.abs(ship.x - context.canvas.width / 2) < 100 && Math.abs(ship.y - context.canvas.height / 2) < 100) {
+				handleEdge(bear);
+				handleEdge(bull);
+
+				if (Math.sqrt((bull.x - coinPos.x) * (bull.x - coinPos.x) + (bull.y - coinPos.y) * (bull.y - coinPos.y)) < 75) {
 					SCORE++;
-					console.log('hti');
+					coinPos.x = Math.floor(Math.random() * context.canvas.width);
+					coinPos.y = Math.floor(Math.random() * context.canvas.height);
+				}
+				if (Math.sqrt((bull.x - bear.x) * (bull.x - bear.x) + (bull.y - bear.y) * (bull.y - bear.y)) < 75) {
+					SCORE = 0;
+					bear.x = Math.floor(Math.random() * context.canvas.width);
+					bear.y = Math.floor(Math.random() * context.canvas.height);
+					bull.x = canvas.width / 2;
+					bull.y = canvas.height / 2;
 				}
 
-				if (TIME == 4) {
+				if (TIME % 4 == 0) {
 					if (choice == 'coinPos1') choice = 'coinPos2';
 					else if (choice == 'coinPos2') choice = 'coinPos3';
 					else if (choice == 'coinPos3') choice = 'coinPos4';
@@ -179,7 +188,6 @@
 					else if (choice == 'coinPos7') choice = 'coinPos8';
 					else if (choice == 'coinPos8') choice = 'coinPos9';
 					else if (choice == 'coinPos9') choice = 'coinPos1';
-					TIME = 0;
 				}
 				TIME++;
 				context.fillStyle = 'black';
@@ -187,7 +195,11 @@
 
 				context.fillText(SCORE, context.canvas.width / 20, context.canvas.height / 5);
 				var img = document.getElementById(choice);
-				context.drawImage(img, context.canvas.width / 2, context.canvas.height / 2);
+				var bullimg = document.getElementById('bullpng');
+				var bearimg = document.getElementById('bear');
+				context.drawImage(img, coinPos.x, coinPos.y);
+				context.drawImage(bullimg, bull.x, bull.y, 100, 100);
+				context.drawImage(bearimg, bear.x, bear.y, 100, 100);
 			}
 		</script>
 	</body>
