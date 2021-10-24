@@ -211,8 +211,8 @@
 				context.fillStyle = 'black';
 				context.font = '50px san-serif';
 
-				context.fillText(SCORE, context.canvas.width / 20, context.canvas.height / 5);
-				context.fillText(TOTAL_SCORE, context.canvas.width - 50, context.canvas.height / 5);
+				context.fillText('Score: ' + SCORE, 20, context.canvas.height / 5);
+				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
 				context.fillStyle = 'black';
 				context.font = '20px san-serif';
 				context.fillText('HIGH SCORE: 420\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
