@@ -144,6 +144,8 @@
 					case 72:
 						menu = true;
 						break;
+					case 8:
+						window.location.href = 'https://shep.blog';
 				}
 			}
 
@@ -201,6 +203,7 @@
 					context.fillText('Move: Arrow Keys', 20, 225);
 					context.fillText('Shoot: W-A-S-D', 20, 250);
 					context.fillText('Charge: Spacebar', 20, 275);
+					context.fillText('Exit: Delete', 20, 300);
 				}
 
 				if (bull.shotClock > 0) {
