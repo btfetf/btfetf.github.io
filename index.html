@@ -56,6 +56,7 @@
 			let TOTAL_SCORE = 0;
 			let TIME = 0;
 			let choice = 'coinPos1';
+			let menu = false;
 
 			// get canvas properties
 			var canvas = document.getElementById('gameCanvas');
@@ -140,6 +141,9 @@
 							shootLaser(a);
 						}
 						break;
+					case 72:
+						menu = true;
+						break;
 				}
 			}
 
@@ -161,6 +165,9 @@
 						break;
 					case 40: // down arrow (stop bull down)
 						bull.moveUp = false;
+						break;
+					case 72:
+						menu = false;
 						break;
 				}
 			}
@@ -185,6 +192,17 @@
 				context.canvas.height = window.innerHeight - 25;
 				context.fillStyle = 'white';
 				context.fillRect(0, 0, canvas.width, canvas.height);
+
+				if (menu) {
+					context.fillStyle = 'white';
+					context.fillRect(100, 100, 100, 100);
+					context.fillStyle = 'black';
+					context.font = '20px san-serif';
+					context.fillText('Move: Arrow Keys', 20, 225);
+					context.fillText('Shoot: W-A-S-D', 20, 250);
+					context.fillText('Charge: Spacebar', 20, 275);
+				}
+
 				if (bull.shotClock > 0) {
 					bull.shotClock -= 1;
 				}
@@ -345,9 +363,10 @@
 				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
 				context.fillStyle = 'black';
 				context.font = '20px san-serif';
-				context.fillText('HP: ' + bull.hp, 20, 50);
-				context.fillText('Ammo: ' + bull.ammo, 20, 75);
-				context.fillText('Charge: ' + bull.boost, 20, 100);
+				context.fillText('Press H for Help ', 20, 20);
+				context.fillText('HP: ' + bull.hp, 20, 55);
+				context.fillText('Ammo: ' + bull.ammo, 20, 80);
+				context.fillText('Charge: ' + bull.boost, 20, 105);
 				context.fillText('HIGH SCORE: 420\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
 				var img = document.getElementById(choice);
 				var bullimg = !bull.charge > 0 || bull.boost == 0 ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
