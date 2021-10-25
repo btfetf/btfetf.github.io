@@ -274,8 +274,8 @@
 				if (Math.sqrt((bull.x - coinPos.x) * (bull.x - coinPos.x) + (bull.y - coinPos.y) * (bull.y - coinPos.y)) < 75) {
 					SCORE++;
 					TOTAL_SCORE++;
-					coinPos.x = Math.floor(Math.random() * context.canvas.width);
-					coinPos.y = Math.floor(Math.random() * context.canvas.height);
+					coinPos.x = Math.floor(Math.random() * (context.canvas.width - 25));
+					coinPos.y = Math.floor(Math.random() * (context.canvas.height - 25));
 					bears.push({
 						x: coinPos.x + 25,
 						y: coinPos.y + 25,
