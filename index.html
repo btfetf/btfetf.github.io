@@ -57,13 +57,16 @@
 			let TIME = 0;
 			let choice = 'coinPos1';
 			let menu = false;
+			let value = 0;
+			let valueString;
+			getPrice();
 
 			// get canvas properties
 			var canvas = document.getElementById('gameCanvas');
 			var context = canvas.getContext('2d');
 			context.canvas.width = window.innerWidth - 50;
 			context.canvas.height = window.innerHeight - 50;
-			coinPos = { x: canvas.width / 2, y: canvas.height / 2 };
+			coinPos = { x: Math.floor(Math.random() * (context.canvas.width - 25)), y: Math.floor(Math.random() * (context.canvas.height - 25)) };
 
 			var bull = {
 				x: canvas.width / 2,
@@ -98,6 +101,28 @@
 
 			// update loop
 			setInterval(update, 1000 / FPS);
+
+			function getPrice() {
+				var xmlhttp = new XMLHttpRequest();
+				var url = 'https://api.coindesk.com/v1/bpi/currentprice.json';
+
+				xmlhttp.onreadystatechange = function () {
+					if (this.readyState == 4 && this.status == 200) {
+						var json = JSON.parse(this.responseText);
+						parseJson(json);
+					}
+				};
+				xmlhttp.open('GET', url, true);
+				xmlhttp.send();
+
+				function parseJson(json) {
+					var time = '<b> Last Update : ' + json['time']['updated'] + '<b>';
+					var usdVal = json['bpi']['USD']['rate'];
+					console.log(usdVal);
+
+					coinValue = usdVal;
+				}
+			}
 
 			function keyDown(/** @type {KeyboardEvent} */ ev) {
 				switch (ev.keyCode) {
@@ -189,7 +214,17 @@
 				}
 			}
 
+			function calculateValue() {
+				value = parseInt(coinValue.split(',').join('')) * SCORE;
+				if (value < 1e3) return value;
+				if (value >= 1e3 && value < 1e6) return +(value / 1e3).toFixed(1) + 'K';
+				if (value >= 1e6 && value < 1e9) return +(value / 1e6).toFixed(1) + 'M';
+				if (value >= 1e9 && value < 1e12) return +(value / 1e9).toFixed(1) + 'B';
+				if (value >= 1e12) return +(value / 1e12).toFixed(1) + 'T';
+			}
+
 			function update() {
+				valueString = calculateValue();
 				context.canvas.width = window.innerWidth - 25;
 				context.canvas.height = window.innerHeight - 25;
 				context.fillStyle = 'white';
@@ -360,9 +395,10 @@
 				}
 				TIME++;
 				context.fillStyle = 'black';
-				context.font = '50px san-serif';
+				context.font = '30px san-serif';
 
-				context.fillText('Score: ' + SCORE, 20, context.canvas.height / 5);
+				context.fillText('Bitcoin: ' + SCORE, 20, context.canvas.height / 5);
+				context.fillText('Current Value: ' + valueString, 20, context.canvas.height / 5 + 30);
 
 				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
 				context.fillStyle = 'black';
