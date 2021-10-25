@@ -110,9 +110,7 @@
 				xmlhttp.send();
 
 				function parseJson(json) {
-					var time = '<b> Last Update : ' + json['time']['updated'] + '<b>';
 					var usdVal = json['bpi']['USD']['rate'];
-					console.log(usdVal);
 
 					coinValue = usdVal;
 				}
@@ -229,11 +227,12 @@
 					context.fillRect(100, 100, 100, 100);
 					context.fillStyle = 'black';
 					context.font = '20px san-serif';
-					context.fillText('Move: Arrow Keys', 20, 225);
-					context.fillText('Shoot: W-A-S-D', 20, 250);
-					context.fillText('Charge: Spacebar', 20, 275);
-					context.fillText('Exit: Delete', 20, 300);
-					context.fillText('Want to contribute?  Submit a Pull Request to btfetf.github.io', 20, 325);
+					context.fillText('Avoid the bears and get rich', 20, 245);
+					context.fillText('Move: Arrow Keys', 20, 275);
+					context.fillText('Shoot: W-A-S-D', 20, 300);
+					context.fillText('Charge: Spacebar', 20, 325);
+					context.fillText('Exit: Delete', 20, 375);
+					context.fillText('Want to contribute?  Submit a pull request to btfetf.github.io', 20, 400);
 				}
 
 				if (bull.shotClock > 0) {
