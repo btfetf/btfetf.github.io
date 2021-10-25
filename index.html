@@ -31,13 +31,7 @@
 		<img id="coinPos9" width="0" height="0" src="./coinPos9.jpg" alt="coinPos9" />
 		<img id="bullpng" width="0" height="0" src="./bull.PNG" alt="bullpng" />
 		<img id="bullWithLazers" width="0" height="0" src="./bullWithLazers.PNG" alt="bullWithLazers" />
-		<img
-			id="bear"
-			width="0"
-			height="0"
-			src="https://www.clipartmax.com/png/middle/453-4536743_bear-clipart-mad-bear-bear-smile-emoji.png"
-			alt="bear"
-		/>
+		<img id="bear" width="0" height="0" src="./bear.png" alt="bear" />
 		<img
 			id="greenticker"
 			width="0"
@@ -398,7 +392,7 @@
 				context.font = '30px san-serif';
 
 				context.fillText('Bitcoin: ' + SCORE, 20, context.canvas.height / 5);
-				context.fillText('Current Value: ' + valueString, 20, context.canvas.height / 5 + 30);
+				context.fillText('Current Value: $' + valueString, 20, context.canvas.height / 5 + 30);
 
 				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
 				context.fillStyle = 'black';
@@ -407,7 +401,7 @@
 				context.fillText('HP: ' + bull.hp, 20, 55);
 				context.fillText('Ammo: ' + bull.ammo, 20, 80);
 				context.fillText('Charge: ' + bull.boost, 20, 105);
-				context.fillText('HIGH SCORE: 420\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
+				context.fillText('HIGH SCORE: $420.69T\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
 				var img = document.getElementById(choice);
 				var bullimg = !bull.charge > 0 || bull.boost == 0 ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
 
