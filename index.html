@@ -46,8 +46,10 @@
 			const BULL_SIZE = 30; // in pixels
 			const TURN_SPEED = 360; // turn speed in degrees per second
 			const LASER_SPD = 30;
+			let CURRENT_BITCOIN_VALUE;
 			let SCORE = 0;
-			let TOTAL_SCORE = 0;
+			let HIGH_SCORE = 0;
+			let HIGH_VALUE = 0;
 			let TIME = 0;
 			let choice = 'coinPos1';
 			let menu = false;
@@ -112,7 +114,7 @@
 				function parseJson(json) {
 					var usdVal = json['bpi']['USD']['rate'];
 
-					coinValue = usdVal;
+					CURRENT_BITCOIN_VALUE = usdVal;
 				}
 			}
 
@@ -136,26 +138,26 @@
 					case 65: // a
 						a = { x: -1, y: 0 };
 						if (bull.shotClock < 1) {
-							shootLaser(a);
+							fire(a);
 						}
 
 						break;
 					case 87: // w
 						a = { x: 0, y: 1 };
 						if (bull.shotClock < 1) {
-							shootLaser(a);
+							fire(a);
 						}
 						break;
 					case 83: // s
 						a = { x: 0, y: -1 };
 						if (bull.shotClock < 1) {
-							shootLaser(a);
+							fire(a);
 						}
 						break;
 					case 68: // d
 						a = { x: 1, y: 0 };
 						if (bull.shotClock < 1) {
-							shootLaser(a);
+							fire(a);
 						}
 						break;
 					case 72:
@@ -191,7 +193,7 @@
 				}
 			}
 
-			function shootLaser(a) {
+			function fire(a) {
 				if (bull.ammo > 0) {
 					bull.ammo--;
 					bull.shotClock = 15;
@@ -207,7 +209,7 @@
 			}
 
 			function calculateValue() {
-				value = parseInt(coinValue.split(',').join('')) * SCORE;
+				value = parseInt(CURRENT_BITCOIN_VALUE.split(',').join('')) * SCORE;
 				if (value < 1e3) return value;
 				if (value >= 1e3 && value < 1e6) return +(value / 1e3).toFixed(1) + 'K';
 				if (value >= 1e6 && value < 1e9) return +(value / 1e6).toFixed(1) + 'M';
@@ -227,7 +229,7 @@
 					context.fillRect(100, 100, 100, 100);
 					context.fillStyle = 'black';
 					context.font = '20px san-serif';
-					context.fillText('Avoid the bears and get rich', 20, 245);
+					context.fillText('Avoid the bears and collect BTC', 20, 245);
 					context.fillText('Move: Arrow Keys', 20, 275);
 					context.fillText('Shoot: W-A-S-D', 20, 300);
 					context.fillText('Charge: Spacebar', 20, 325);
@@ -333,7 +335,10 @@
 				// if bull runs into coin
 				if (Math.sqrt((bull.x - coinPos.x) * (bull.x - coinPos.x) + (bull.y - coinPos.y) * (bull.y - coinPos.y)) < 75) {
 					SCORE++;
-					TOTAL_SCORE++;
+					if (SCORE > HIGH_SCORE) {
+						HIGH_SCORE = SCORE;
+						HIGH_VALUE = value + parseInt(CURRENT_BITCOIN_VALUE.split(',').join(''));
+					}
 					if (SCORE % 10 == 0) {
 						bull.ammo++;
 					}
@@ -393,14 +398,18 @@
 				context.fillText('Bitcoin: ' + SCORE, 20, context.canvas.height / 5);
 				context.fillText('Current Value: $' + valueString, 20, context.canvas.height / 5 + 30);
 
-				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
+				context.fillText('Your High Score: ' + HIGH_SCORE, context.canvas.width - 250, 50);
+				context.fillText('$' + HIGH_VALUE, context.canvas.width - 250, 80);
 				context.fillStyle = 'black';
 				context.font = '20px san-serif';
 				context.fillText('Press H for Help ', 20, 20);
 				context.fillText('HP: ' + bull.hp, 20, 55);
 				context.fillText('Ammo: ' + bull.ammo, 20, 80);
 				context.fillText('Charge: ' + bull.boost, 20, 105);
-				context.fillText('HIGH SCORE: $420.69T\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
+				context.fillText('Leaderboard ', context.canvas.width / 2 - 60, context.canvas.height / 20);
+				context.fillText('$694.20T\nUser: musk71', context.canvas.width / 2 - 100, context.canvas.height / 20 + 25);
+				context.fillText('$420.69T\nUser: shep', context.canvas.width / 2 - 100, context.canvas.height / 20 + 50);
+
 				var img = document.getElementById(choice);
 				var bullimg = !bull.charge > 0 || bull.boost == 0 ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
 
