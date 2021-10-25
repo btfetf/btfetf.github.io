@@ -38,12 +38,20 @@
 			src="https://www.clipartmax.com/png/middle/453-4536743_bear-clipart-mad-bear-bear-smile-emoji.png"
 			alt="bear"
 		/>
+		<img
+			id="greenticker"
+			width="0"
+			height="0"
+			src="https://www.pngfind.com/pngs/m/50-503249_arrows-clip-art-download-green-up-arrow-transparent.png"
+			alt="greenticker"
+		/>
 
 		<script>
 			const FPS = 30; // frames per second
 			const FRICTION = 0.7; // friction coefficient of space (0 = none, 1 = lots)
 			const BULL_SIZE = 30; // in pixels
 			const TURN_SPEED = 360; // turn speed in degrees per second
+			const LASER_SPD = 30;
 			let SCORE = 0;
 			let TOTAL_SCORE = 0;
 			let TIME = 0;
@@ -64,6 +72,9 @@
 				moveDown: false,
 				moveLeft: false,
 				moveRight: false,
+				shotClock: 0,
+				lasers: [],
+				hp: 3,
 			};
 
 			var bears = [
@@ -102,6 +113,31 @@
 					case 40: // up arrow (move bull up)
 						bull.moveUp = true;
 						break;
+					case 65: // a
+						a = { x: -1, y: 0 };
+						if (bull.shotClock < 1) {
+							shootLaser(a);
+						}
+
+						break;
+					case 87: // w
+						a = { x: 0, y: 1 };
+						if (bull.shotClock < 1) {
+							shootLaser(a);
+						}
+						break;
+					case 83: // s
+						a = { x: 0, y: -1 };
+						if (bull.shotClock < 1) {
+							shootLaser(a);
+						}
+						break;
+					case 68: // d
+						a = { x: 1, y: 0 };
+						if (bull.shotClock < 1) {
+							shootLaser(a);
+						}
+						break;
 				}
 			}
 
@@ -127,12 +163,26 @@
 				}
 			}
 
+			function shootLaser(a) {
+				bull.shotClock = 15;
+				// create the laser object
+				bull.lasers.push({
+					x: bull.x,
+					y: bull.y,
+					xv: LASER_SPD * a.x,
+					yv: -LASER_SPD * a.y,
+					life: 25,
+				});
+			}
+
 			function update() {
-				context.canvas.width = window.innerWidth;
-				context.canvas.height = window.innerHeight;
-				// draw space
+				context.canvas.width = window.innerWidth - 25;
+				context.canvas.height = window.innerHeight - 25;
 				context.fillStyle = 'white';
 				context.fillRect(0, 0, canvas.width, canvas.height);
+				if (bull.shotClock > 0) {
+					bull.shotClock -= 1;
+				}
 
 				function move(object) {
 					if (object.moveLeft) {
@@ -194,22 +244,26 @@
 
 					//if bull runs into bear
 					if (Math.sqrt((bull.x - bears[bear].x) * (bull.x - bears[bear].x) + (bull.y - bears[bear].y) * (bull.y - bears[bear].y)) < 75) {
-						SCORE = 0;
-						bears[bear].x = Math.floor(Math.random() * context.canvas.width);
-						bears[bear].y = Math.floor(Math.random() * context.canvas.height);
-						bull.x = canvas.width / 2;
-						bull.y = canvas.height / 2;
-						bears = [
-							{
-								x: coinPos.x - 25,
-								y: coinPos.y - 25,
-								r: BULL_SIZE / 2,
-								moveUp: false,
-								moveDown: false,
-								moveLeft: true,
-								moveRight: false,
-							},
-						];
+						bull.hp--;
+						if (bull.hp < 1) {
+							SCORE = 0;
+							bull.x = canvas.width / 2;
+							bull.y = canvas.height / 2;
+							bull.hp = 3;
+							bears = [
+								{
+									x: coinPos.x - 25,
+									y: coinPos.y - 25,
+									r: BULL_SIZE / 2,
+									moveUp: false,
+									moveDown: false,
+									moveLeft: true,
+									moveRight: false,
+								},
+							];
+						} else {
+							bears.splice(bear, 1);
+						}
 					}
 					context.drawImage(bearimg, bears[bear].x, bears[bear].y, 100, 100);
 				}
@@ -233,6 +287,31 @@
 					});
 				}
 
+				var ticker = document.getElementById('greenticker');
+				//check if laser hit bears
+				for (var i = 0; i < bull.lasers.length; i++) {
+					bull.lasers[i].life--;
+					bull.lasers[i].x += bull.lasers[i].xv;
+					bull.lasers[i].y += bull.lasers[i].yv;
+					if (bull.lasers[i].life != 0) {
+						for (bear in bears) {
+							if (
+								Math.sqrt(
+									(bull.lasers[i].x - bears[bear].x) * (bull.lasers[i].x - bears[bear].x) +
+										(bull.lasers[i].y - bears[bear].y) * (bull.lasers[i].y - bears[bear].y)
+								) < 75
+							) {
+								bears.splice(bear, 1);
+								bull.lasers.splice(i, 1);
+							} else {
+								context.drawImage(ticker, bull.lasers[i].x, bull.lasers[i].y, 25, 25);
+							}
+						}
+					} else {
+						bull.lasers.splice(i, 1);
+					}
+				}
+
 				if (TIME % 4 == 0) {
 					if (choice == 'coinPos1') choice = 'coinPos2';
 					else if (choice == 'coinPos2') choice = 'coinPos3';
@@ -249,6 +328,7 @@
 				context.font = '50px san-serif';
 
 				context.fillText('Score: ' + SCORE, 20, context.canvas.height / 5);
+				context.fillText('HP: ' + bull.hp, 20, context.canvas.height / 5 + 50);
 				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
 				context.fillStyle = 'black';
 				context.font = '20px san-serif';
