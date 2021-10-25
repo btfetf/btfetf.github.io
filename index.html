@@ -75,6 +75,8 @@
 				shotClock: 0,
 				lasers: [],
 				hp: 3,
+				ammo: 10,
+				boost: 100,
 			};
 
 			var bears = [
@@ -164,15 +166,18 @@
 			}
 
 			function shootLaser(a) {
-				bull.shotClock = 15;
-				// create the laser object
-				bull.lasers.push({
-					x: bull.x,
-					y: bull.y,
-					xv: LASER_SPD * a.x,
-					yv: -LASER_SPD * a.y,
-					life: 25,
-				});
+				if (bull.ammo > 0) {
+					bull.ammo--;
+					bull.shotClock = 15;
+					// create the laser object
+					bull.lasers.push({
+						x: bull.x,
+						y: bull.y,
+						xv: LASER_SPD * a.x,
+						yv: -LASER_SPD * a.y,
+						life: 25,
+					});
+				}
 			}
 
 			function update() {
@@ -200,10 +205,13 @@
 				}
 
 				move(bull);
-				if (bull.charge) {
+				if (bull.charge && bull.boost > 0) {
 					move(bull);
 					move(bull);
 					move(bull);
+					bull.boost--;
+				} else if (TIME % 5 == 0 && bull.boost < 100) {
+					bull.boost++;
 				}
 
 				// handle edge of screen
@@ -250,6 +258,8 @@
 							bull.x = canvas.width / 2;
 							bull.y = canvas.height / 2;
 							bull.hp = 3;
+							bull.ammo = 10;
+							bull.boost = 100;
 							bears = [
 								{
 									x: coinPos.x - 25,
@@ -274,6 +284,9 @@
 				if (Math.sqrt((bull.x - coinPos.x) * (bull.x - coinPos.x) + (bull.y - coinPos.y) * (bull.y - coinPos.y)) < 75) {
 					SCORE++;
 					TOTAL_SCORE++;
+					if (SCORE % 10 == 0) {
+						bull.ammo++;
+					}
 					coinPos.x = Math.floor(Math.random() * (context.canvas.width - 25));
 					coinPos.y = Math.floor(Math.random() * (context.canvas.height - 25));
 					bears.push({
@@ -328,16 +341,19 @@
 				context.font = '50px san-serif';
 
 				context.fillText('Score: ' + SCORE, 20, context.canvas.height / 5);
-				context.fillText('HP: ' + bull.hp, 20, context.canvas.height / 5 + 50);
+
 				context.fillText('All Time: ' + TOTAL_SCORE, context.canvas.width - 250, context.canvas.height / 5);
 				context.fillStyle = 'black';
 				context.font = '20px san-serif';
+				context.fillText('HP: ' + bull.hp, 20, 50);
+				context.fillText('Ammo: ' + bull.ammo, 20, 75);
+				context.fillText('Charge: ' + bull.boost, 20, 100);
 				context.fillText('HIGH SCORE: 420\nUser: Shep Sims', context.canvas.width / 2 - 100, context.canvas.height / 20);
 				var img = document.getElementById(choice);
-				var bullimg = !bull.charge ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
+				var bullimg = !bull.charge > 0 || bull.boost == 0 ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
 
 				context.drawImage(img, coinPos.x, coinPos.y);
-				context.drawImage(bullimg, bull.x, bull.y, !bull.charge ? 100 : 120, !bull.charge ? 100 : 120);
+				context.drawImage(bullimg, bull.x, bull.y, !bull.charge || bull.boost == 0 ? 100 : 120, !bull.charge || bull.boost == 0 ? 100 : 120);
 			}
 		</script>
 	</body>
