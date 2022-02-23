@@ -29,6 +29,15 @@
 		<img id="coinPos7" width="0" height="0" src="./coinPos7.jpg" alt="coinPos7" />
 		<img id="coinPos8" width="0" height="0" src="./coinPos8.jpg" alt="coinPos8" />
 		<img id="coinPos9" width="0" height="0" src="./coinPos9.jpg" alt="coinPos9" />
+		<img id="powerPos1" width="0" height="0" src="./powerPos1.png" alt="powerPos1" />
+		<img id="powerPos2" width="0" height="0" src="./powerPos2.png" alt="powerPos2" />
+		<img id="powerPos3" width="0" height="0" src="./powerPos3.png" alt="powerPos3" />
+		<img id="powerPos4" width="0" height="0" src="./powerPos4.png" alt="powerPos4" />
+		<img id="powerPos5" width="0" height="0" src="./powerPos5.png" alt="powerPos5" />
+		<img id="powerPos6" width="0" height="0" src="./powerPos6.png" alt="powerPos6" />
+		<img id="powerPos7" width="0" height="0" src="./powerPos7.png" alt="powerPos7" />
+		<img id="powerPos8" width="0" height="0" src="./powerPos8.png" alt="powerPos8" />
+		<img id="powerPos9" width="0" height="0" src="./powerPos9.png" alt="powerPos9" />
 		<img id="bullpng" width="0" height="0" src="./bull.PNG" alt="bullpng" />
 		<img id="bullWithLazers" width="0" height="0" src="./bullWithLazers.PNG" alt="bullWithLazers" />
 		<img id="bear" width="0" height="0" src="./bear.png" alt="bear" />
@@ -52,9 +61,13 @@
 			let HIGH_VALUE = 0;
 			let TIME = 0;
 			let choice = 'coinPos1';
+			let powerPos = 'powerPos1';
 			let menu = false;
 			let value = 0;
 			let valueString;
+			let bounce = false;
+			let ppx = 0;
+			let ppy = 0;
 			getPrice();
 
 			// get canvas properties
@@ -77,6 +90,14 @@
 				hp: 3,
 				ammo: 10,
 				boost: 100,
+			};
+
+			var powerUp = {
+				position: { x: canvas.width / 2, y: canvas.height / 2 },
+				name: 'bouncyLasers',
+				effect: () => {
+					bounce = true;
+				},
 			};
 
 			var bears = [
@@ -240,6 +261,20 @@
 				if (bull.shotClock > 0) {
 					bull.shotClock -= 1;
 				}
+				if (SCORE > 2) console.log('h');
+				if (!bounce) console.log('i');
+
+				if (SCORE > 2 && !bounce) {
+					console.log(powerUp.position);
+
+					if (TIME % 15 == 0) {
+						let i = Math.floor(Math.random() * 4);
+						let j = Math.floor(Math.random() * 4);
+						TIME % 30 > 15 ? (powerUp.position.x += j) : (powerUp.position.x -= j);
+						TIME % 30 > 15 ? (powerUp.position.y -= i) : (powerUp.position.y += i);
+					}
+					context.drawImage(document.getElementById(powerPos), powerUp.position.x, powerUp.position.y);
+				}
 
 				function move(object) {
 					if (object.moveLeft) {
@@ -354,11 +389,27 @@
 						moveRight: false,
 					});
 				}
+				if (
+					Math.sqrt(
+						(bull.x - powerUp.position.x) * (bull.x - powerUp.position.x) + (bull.y - powerUp.position.y) * (bull.y - powerUp.position.y)
+					) < 75 &&
+					SCORE > 3
+				) {
+					powerUp.effect();
+				}
+				function bounceCheck(laser) {
+					if (laser.y + laser.yv < 0 || laser.y + laser.yv > canvas.height) {
+						laser.yv = -laser.yv;
+					} else if (laser.x + laser.xv < 0 || laser.x + laser.xv > canvas.width) {
+						laser.xv = -laser.xv;
+					}
+				}
 
 				var ticker = document.getElementById('greenticker');
-				//check if laser hit bears
+				//check if laser hit bears or wall if bouncy
 				for (var i = 0; i < bull.lasers.length; i++) {
 					bull.lasers[i].life--;
+					if (bounce) bounceCheck(bull.lasers[i]);
 					bull.lasers[i].x += bull.lasers[i].xv;
 					bull.lasers[i].y += bull.lasers[i].yv;
 					if (bull.lasers[i].life != 0) {
@@ -391,6 +442,19 @@
 					else if (choice == 'coinPos8') choice = 'coinPos9';
 					else if (choice == 'coinPos9') choice = 'coinPos1';
 				}
+
+				if (TIME % 6 == 0) {
+					if (powerPos == 'powerPos1') powerPos = 'powerPos2';
+					else if (powerPos == 'powerPos2') powerPos = 'powerPos3';
+					else if (powerPos == 'powerPos3') powerPos = 'powerPos4';
+					else if (powerPos == 'powerPos4') powerPos = 'powerPos5';
+					else if (powerPos == 'powerPos5') powerPos = 'powerPos6';
+					else if (powerPos == 'powerPos6') powerPos = 'powerPos7';
+					else if (powerPos == 'powerPos7') powerPos = 'powerPos8';
+					else if (powerPos == 'powerPos8') powerPos = 'powerPos9';
+					else if (powerPos == 'powerPos9') powerPos = 'powerPos1';
+				}
+
 				TIME++;
 				context.fillStyle = 'black';
 				context.font = '30px san-serif';
@@ -408,7 +472,7 @@
 				context.fillText('Charge: ' + bull.boost, 20, 105);
 				context.fillText('Leaderboard ', context.canvas.width / 2 - 60, context.canvas.height / 20);
 				context.fillText('$694.20T\nUser: musk71', context.canvas.width / 2 - 100, context.canvas.height / 20 + 25);
-				context.fillText('$420.69T\nUser: shep', context.canvas.width / 2 - 100, context.canvas.height / 20 + 50);
+				context.fillText('$4.24M\nUser: shep', context.canvas.width / 2 - 100, context.canvas.height / 20 + 50);
 
 				var img = document.getElementById(choice);
 				var bullimg = !bull.charge > 0 || bull.boost == 0 ? document.getElementById('bullpng') : document.getElementById('bullWithLazers');
