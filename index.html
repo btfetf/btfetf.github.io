@@ -68,6 +68,8 @@
 			let bounce = false;
 			let ppx = 0;
 			let ppy = 0;
+			let double = false;
+			let fork = false;
 			getPrice();
 
 			// get canvas properties
@@ -219,13 +221,40 @@
 					bull.ammo--;
 					bull.shotClock = 15;
 					// create the laser object
-					bull.lasers.push({
-						x: bull.x,
-						y: bull.y,
-						xv: LASER_SPD * a.x,
-						yv: -LASER_SPD * a.y,
-						life: 25,
-					});
+					if (fork) {
+						bull.lasers.push({
+							x: bull.x + 50,
+							y: bull.y - 50,
+							xv: LASER_SPD * a.x,
+							yv: -LASER_SPD * a.y,
+							life: bounce ? 150 : 25,
+						});
+						bull.lasers.push({
+							x: bull.x - 50,
+							y: bull.y + 50,
+							xv: LASER_SPD * a.x,
+							yv: -LASER_SPD * a.y,
+							life: bounce ? 150 : 25,
+						});
+					} else {
+						bull.lasers.push({
+							x: bull.x,
+							y: bull.y,
+							xv: LASER_SPD * a.x,
+							yv: -LASER_SPD * a.y,
+							life: bounce ? 150 : 25,
+						});
+					}
+
+					if (double) {
+						bull.lasers.push({
+							x: bull.x + LASER_SPD * a.x * 3,
+							y: bull.y - LASER_SPD * a.y * 3,
+							xv: LASER_SPD * a.x,
+							yv: -LASER_SPD * a.y,
+							life: bounce ? 150 : 25,
+						});
+					}
 				}
 			}
 
@@ -261,10 +290,14 @@
 				if (bull.shotClock > 0) {
 					bull.shotClock -= 1;
 				}
-				if (SCORE > 2) console.log('h');
-				if (!bounce) console.log('i');
+				if (SCORE > 20 && !bounce) {
+					double = true;
+				}
+				if (SCORE > 30 && !bounce) {
+					fork = true;
+				}
 
-				if (SCORE > 2 && !bounce) {
+				if (SCORE > 10 && !bounce) {
 					console.log(powerUp.position);
 
 					if (TIME % 15 == 0) {
@@ -393,7 +426,7 @@
 					Math.sqrt(
 						(bull.x - powerUp.position.x) * (bull.x - powerUp.position.x) + (bull.y - powerUp.position.y) * (bull.y - powerUp.position.y)
 					) < 75 &&
-					SCORE > 3
+					SCORE > 10
 				) {
 					powerUp.effect();
 				}
