@@ -290,6 +290,16 @@
 				if (bull.shotClock > 0) {
 					bull.shotClock -= 1;
 				}
+				if (SCORE < 15 && bull.boost == 100) {
+					if (TIME % 75 == 0 && bull.hp < 3 && bull.ammo == 10) bull.hp++;
+					if (TIME % 75 == 0 && bull.ammo < 10) bull.ammo++;
+				}
+				if (SCORE > 15 && SCORE < 30 && bull.hp < 3 && bull.boost == 100 && TIME % 150 == 0) {
+					bull.hp++;
+				}
+				if (SCORE > 30 && bull.hp < 2 && bull.boost == 100 && TIME % 250 == 0) {
+					bull.hp++;
+				}
 				if (SCORE > 20 && !bounce) {
 					double = true;
 				}
