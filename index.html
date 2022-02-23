@@ -70,6 +70,7 @@
 			let ppy = 0;
 			let double = false;
 			let fork = false;
+			let bearspeed = 5;
 			getPrice();
 
 			// get canvas properties
@@ -306,6 +307,9 @@
 				if (SCORE > 30 && !bounce) {
 					fork = true;
 				}
+				if (TIME % 50 == 0) {
+					bearspeed += 0.1;
+				}
 
 				if (SCORE > 10 && !bounce) {
 					console.log(powerUp.position);
@@ -319,26 +323,26 @@
 					context.drawImage(document.getElementById(powerPos), powerUp.position.x, powerUp.position.y);
 				}
 
-				function move(object) {
+				function move(object, type) {
 					if (object.moveLeft) {
-						object.x = object.x - 5;
+						object.x = type == 'bear' ? object.x - bearspeed : object.x - 5;
 					}
 					if (object.moveRight) {
-						object.x = object.x + 5;
+						object.x = type == 'bear' ? object.x + bearspeed : object.x + 5;
 					}
 					if (object.moveUp) {
-						object.y = object.y + 5;
+						object.y = type == 'bear' ? object.y + bearspeed : object.y + 5;
 					}
 					if (object.moveDown) {
-						object.y = object.y - 5;
+						object.y = type == 'bear' ? object.y - bearspeed : object.y - 5;
 					}
 				}
 
-				move(bull);
+				move(bull, 'bull');
 				if (bull.charge && bull.boost > 0) {
-					move(bull);
-					move(bull);
-					move(bull);
+					move(bull, 'bull');
+					move(bull, 'bull');
+					move(bull, 'bull');
 					bull.boost--;
 				} else if (TIME % 5 == 0 && bull.boost < 100) {
 					bull.boost++;
@@ -377,7 +381,7 @@
 							bears[bear].moveUp = false;
 						}
 					}
-					move(bears[bear]);
+					move(bears[bear], 'bear');
 					handleEdge(bears[bear]);
 
 					//if bull runs into bear
@@ -385,6 +389,9 @@
 						bull.hp--;
 						if (bull.hp < 1) {
 							SCORE = 0;
+							double = false;
+							bounce = false;
+							fork = false;
 							bull.x = canvas.width / 2;
 							bull.y = canvas.height / 2;
 							bull.hp = 3;
