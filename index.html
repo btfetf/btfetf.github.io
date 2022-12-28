@@ -41,6 +41,7 @@
 		<img id="bullpng" width="0" height="0" src="./bull.PNG" alt="bullpng" />
 		<img id="bullWithLazers" width="0" height="0" src="./bullWithLazers.PNG" alt="bullWithLazers" />
 		<img id="bear" width="0" height="0" src="./bear.png" alt="bear" />
+		<img id="projectile" width="0" height="0" src="./projectile.png" alt="projectile" />
 		<img
 			id="greenticker"
 			width="0"
@@ -70,7 +71,7 @@
 			let ppy = 0;
 			let double = false;
 			let fork = false;
-			let bearspeed = 5;
+			let bearspeed = 3;
 			getPrice();
 
 			// get canvas properties
@@ -112,8 +113,13 @@
 					moveDown: false,
 					moveLeft: true,
 					moveRight: false,
+					ammo: 0,
+					level: 0,
+					lasers: [],
 				},
 			];
+
+			var enemyProjectiles = [];
 
 			// event handlers
 			document.addEventListener('keydown', keyDown);
@@ -184,7 +190,7 @@
 							fire(a);
 						}
 						break;
-					case 72:
+					case 72: // h
 						menu = true;
 						break;
 					case 8:
@@ -257,6 +263,41 @@
 						});
 					}
 				}
+			}
+
+			function enemyShot(enemy) {
+				if (enemy.ammo > 0) {
+					enemy.ammo--;
+					// create the bullet object
+					enemy.shotClock = 50;
+					enemy.lasers.push(50);
+					console.log({
+						x: enemy.x,
+						y: enemy.y,
+						xv: 10,
+						yv: 10,
+						life: 50,
+					});
+
+					// get direction vector between enemy and self
+
+					let xdir = bull.x - enemy.x;
+					let ydir = bull.y - enemy.y;
+
+					let xunit = xdir % 10;
+					let yunit = ydir % 10;
+
+					console.log('units', xunit, yunit);
+
+					enemyProjectiles.push({
+						x: enemy.x,
+						y: enemy.y,
+						xv: xunit,
+						yv: yunit,
+						life: 50,
+					});
+				}
+				console.log('FIRED', enemy, enemyProjectiles);
 			}
 
 			function calculateValue() {
@@ -381,36 +422,35 @@
 							bears[bear].moveUp = false;
 						}
 					}
+
+					if (TIME % 500 == 0) {
+						bears[bear].ammo += 1;
+					}
+					if (TIME % 50 == 0) {
+						if (bears[bear].ammo > 0) {
+							enemyShot(bears[bear]);
+						}
+					}
 					move(bears[bear], 'bear');
 					handleEdge(bears[bear]);
+
+					for (laser in bears[bear].lasers) {
+						//collision detection
+						if (
+							Math.sqrt(
+								(bull.x - bears[bear].lasers[laser].x) * (bull.x - bears[bear].lasers[laser].x) +
+									(bull.y - bears[bear].lasers[laser].y) * (bull.y - bears[bear].lasers[laser].y)
+							) < 75
+						) {
+							bull.hp--;
+							bears[bear].lasers.pop(laser);
+						}
+					}
 
 					//if bull runs into bear
 					if (Math.sqrt((bull.x - bears[bear].x) * (bull.x - bears[bear].x) + (bull.y - bears[bear].y) * (bull.y - bears[bear].y)) < 75) {
 						bull.hp--;
-						if (bull.hp < 1) {
-							SCORE = 0;
-							double = false;
-							bounce = false;
-							fork = false;
-							bull.x = canvas.width / 2;
-							bull.y = canvas.height / 2;
-							bull.hp = 3;
-							bull.ammo = 10;
-							bull.boost = 100;
-							bears = [
-								{
-									x: coinPos.x - 25,
-									y: coinPos.y - 25,
-									r: BULL_SIZE / 2,
-									moveUp: false,
-									moveDown: false,
-									moveLeft: true,
-									moveRight: false,
-								},
-							];
-						} else {
-							bears.splice(bear, 1);
-						}
+						bears.splice(bear, 1);
 					}
 					context.drawImage(bearimg, bears[bear].x, bears[bear].y, 100, 100);
 				}
@@ -456,6 +496,8 @@
 				}
 
 				var ticker = document.getElementById('greenticker');
+				var projectile = document.getElementById('projectile');
+
 				//check if laser hit bears or wall if bouncy
 				for (var i = 0; i < bull.lasers.length; i++) {
 					bull.lasers[i].life--;
@@ -479,6 +521,56 @@
 					} else {
 						bull.lasers.splice(i, 1);
 					}
+				}
+
+				for (var i = 0; i < enemyProjectiles.length; i++) {
+					enemyProjectiles[i].life--;
+					enemyProjectiles[i].x += enemyProjectiles[i].xv;
+					enemyProjectiles[i].y += enemyProjectiles[i].yv;
+					if (enemyProjectiles[i].life != 0) {
+						for (bear in bears) {
+							if (
+								Math.sqrt(
+									(enemyProjectiles[i].x - bull.x) * (enemyProjectiles[i].x - bull.x) +
+										(enemyProjectiles[i].y - bull.y) * (enemyProjectiles[i].y - bull.y)
+								) < 75
+							) {
+								bull.hp--;
+								enemyProjectiles.splice(i, 1);
+							} else {
+								context.drawImage(projectile, enemyProjectiles[i].x, enemyProjectiles[i].y, 25, 25);
+							}
+						}
+					} else {
+						enemyProjectiles.splice(i, 1);
+					}
+				}
+
+				// If game over
+				if (bull.hp < 1) {
+					SCORE = 0;
+					bearspeed = 3;
+					double = false;
+					bounce = false;
+					fork = false;
+					bull.x = canvas.width / 2;
+					bull.y = canvas.height / 2;
+					bull.hp = 3;
+					bull.ammo = 10;
+					bull.boost = 100;
+					bears = [
+						{
+							x: coinPos.x - 25,
+							y: coinPos.y - 25,
+							r: BULL_SIZE / 2,
+							moveUp: false,
+							moveDown: false,
+							moveLeft: true,
+							moveRight: false,
+							ammo: 0,
+							lasers: [],
+						},
+					];
 				}
 
 				if (TIME % 4 == 0) {
