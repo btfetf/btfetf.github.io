@@ -266,19 +266,15 @@
 			}
 
 			function enemyShot(enemy) {
-				if (enemy.ammo > 0) {
+				if (enemy.reload == 0) {
+					enemy.reload == 50;
+					enemy.ammo++;
+				}
+				if (enemy.ammo > 0 && enemy.shotClock == 0) {
 					enemy.ammo--;
 					// create the bullet object
 					enemy.shotClock = 50;
 					enemy.lasers.push(50);
-					console.log({
-						x: enemy.x,
-						y: enemy.y,
-						xv: 10,
-						yv: 10,
-						life: 50,
-					});
-
 					// get direction vector between enemy and self
 
 					let xdir = bull.x - enemy.x;
@@ -287,17 +283,16 @@
 					let xunit = xdir % 10;
 					let yunit = ydir % 10;
 
-					console.log('units', xunit, yunit);
-
 					enemyProjectiles.push({
 						x: enemy.x,
 						y: enemy.y,
 						xv: xunit,
 						yv: yunit,
-						life: 50,
+						life: 250,
 					});
+				} else if (enemy.shotClock > 0) {
+					enemy.shotClock--;
 				}
-				console.log('FIRED', enemy, enemyProjectiles);
 			}
 
 			function calculateValue() {
@@ -423,14 +418,8 @@
 						}
 					}
 
-					if (TIME % 500 == 0) {
-						bears[bear].ammo += 1;
-					}
-					if (TIME % 50 == 0) {
-						if (bears[bear].ammo > 0) {
-							enemyShot(bears[bear]);
-						}
-					}
+					bears[bear].ammo += 1;
+					enemyShot(bears[bear]);
 					move(bears[bear], 'bear');
 					handleEdge(bears[bear]);
 
@@ -470,6 +459,10 @@
 					coinPos.x = Math.floor(Math.random() * (context.canvas.width - 25));
 					coinPos.y = Math.floor(Math.random() * (context.canvas.height - 25));
 					bears.push({
+						ammo: 0,
+						shotClock: 50,
+						recharge: 50,
+						lasers: [],
 						x: coinPos.x + 25,
 						y: coinPos.y + 25,
 						r: BULL_SIZE / 2,
@@ -571,6 +564,7 @@
 							lasers: [],
 						},
 					];
+					enemyProjectiles = [];
 				}
 
 				if (TIME % 4 == 0) {
